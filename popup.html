@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scribd Downloader</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 340px;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: #0f0f12;
+      color: #e4e4e7;
+      overflow-x: hidden;
+    }
+
+    .container { padding: 22px; }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .logo {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .header-text h1 { font-size: 15px; font-weight: 700; color: #fafafa; letter-spacing: -0.3px; }
+    .header-text p { font-size: 11px; color: #71717a; margin-top: 2px; }
+
+    .input-wrapper { margin-bottom: 14px; }
+    .input-wrapper input {
+      width: 100%; padding: 10px 14px;
+      background: #1a1a21; border: 1px solid #27272e; border-radius: 8px;
+      color: #fafafa; font-family: inherit; font-size: 13px; outline: none;
+      transition: border-color 0.2s ease;
+    }
+    .input-wrapper input::placeholder { color: #52525b; }
+    .input-wrapper input:focus { border-color: #f97316; }
+
+    .btn {
+      width: 100%; padding: 11px 16px; border: none; border-radius: 8px;
+      font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-primary { background: linear-gradient(135deg, #f97316, #ea580c); color: white; }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .detect-banner {
+      display: none; padding: 10px 14px;
+      background: rgba(249, 115, 22, 0.08);
+      border: 1px solid rgba(249, 115, 22, 0.2);
+      border-radius: 8px; margin-bottom: 14px;
+      font-size: 12px; color: #f97316; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .detect-banner:hover { background: rgba(249, 115, 22, 0.12); }
+    .detect-banner.visible { display: flex; align-items: center; gap: 8px; }
+
+    .noti {
+      display: none;
+      margin-top: 14px; padding: 10px 14px;
+      border-radius: 8px; font-size: 12px;
+      align-items: center; gap: 8px;
+    }
+    .noti.visible { display: flex; }
+    .noti.working {
+      background: rgba(249, 115, 22, 0.08);
+      border: 1px solid rgba(249, 115, 22, 0.2);
+      color: #f97316;
+    }
+    .noti.success {
+      background: rgba(34, 197, 94, 0.08);
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+    }
+    .noti.error {
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+    .noti .spinner {
+      width: 14px; height: 14px;
+      border: 2px solid rgba(249, 115, 22, 0.3);
+      border-top-color: #f97316;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .footer {
+      margin-top: 16px; padding-top: 10px;
+      border-top: 1px solid #1a1a21;
+      text-align: center; font-size: 10px; color: #3f3f46;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+      </div>
+      <div class="header-text">
+        <h1>Scribd Downloader</h1>
+        <p>Dán link Scribd, bấm tải, nhận file PDF</p>
+      </div>
+    </div>
+
+    <div id="detect-banner" class="detect-banner">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+      <span>Phát hiện trang Scribd — bấm để tự điền link</span>
+    </div>
+
+    <div class="input-wrapper">
+      <input type="text" id="scribd-url" placeholder="https://www.scribd.com/document/...">
+    </div>
+
+    <button class="btn btn-primary" id="btn-start" disabled>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      Tải PDF
+    </button>
+
+    <div id="noti" class="noti">
+      <span id="noti-icon"></span>
+      <span id="noti-text"></span>
+    </div>
+
+    <div class="footer">Scribd Downloader v3.1</div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
